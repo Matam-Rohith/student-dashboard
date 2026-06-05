@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-graduation-cap"></i>
+          <span>StudyBoard</span>
+        </div>
+        <p class="student-name" id="studentNameDisplay">Matam Rohith</p>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" onclick="showTab('gpa')">
+          <i class="fas fa-chart-line"></i> GPA Calculator
+        </button>
+        <button class="nav-btn" onclick="showTab('attendance')">
+          <i class="fas fa-calendar-check"></i> Attendance
+        </button>
+        <button class="nav-btn" onclick="showTab('timetable')">
+          <i class="fas fa-clock"></i> Timetable
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="clear-btn" onclick="clearAllData()"><i class="fas fa-trash"></i> Clear All Data</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ========== GPA TAB ========== -->
+      <section id="tab-gpa" class="tab active">
+        <div class="tab-header">
+          <h2><i class="fas fa-chart-line"></i> GPA Calculator</h2>
+          <p>Track your grades and calculate your cumulative GPA</p>
+        </div>
+        <div class="gpa-summary">
+          <div class="gpa-card big">
+            <span class="label">Current GPA</span>
+            <span class="value" id="currentGPA">0.00</span>
+            <span class="grade-letter" id="gradeLetter">N/A</span>
+          </div>
+          <div class="gpa-card">
+            <span class="label">Total Subjects</span>
+            <span class="value" id="totalSubjects">0</span>
+          </div>
+          <div class="gpa-card">
+            <span class="label">Total Credits</span>
+            <span class="value" id="totalCredits">0</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Add Subject</h3>
+          <div class="form-row">
+            <input type="text" id="subjectName" placeholder="Subject Name (e.g. Data Structures)" />
+            <input type="number" id="subjectCredits" placeholder="Credits" min="1" max="6" />
+            <select id="subjectGrade">
+              <option value="10">O (10)</option>
+              <option value="9">A+ (9)</option>
+              <option value="8">A (8)</option>
+              <option value="7">B+ (7)</option>
+              <option value="6">B (6)</option>
+              <option value="5">C (5)</option>
+              <option value="0">F (0)</option>
+            </select>
+            <button class="btn-primary" onclick="addSubject()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Subjects</h3>
+          <div class="table-wrap">
+            <table id="subjectsTable">
+              <thead>
+                <tr><th>Subject</th><th>Credits</th><th>Grade</th><th>Grade Points</th><th>Action</th></tr>
+              </thead>
+              <tbody id="subjectsBody"></tbody>
+            </table>
+          </div>
+          <p id="noSubjects" class="empty-msg">No subjects added yet. Add your first subject above!</p>
+        </div>
+      </section>
+
+      <!-- ========== ATTENDANCE TAB ========== -->
+      <section id="tab-attendance" class="tab">
+        <div class="tab-header">
+          <h2><i class="fas fa-calendar-check"></i> Attendance Tracker</h2>
+          <p>Monitor your attendance percentage per subject</p>
+        </div>
+        <div class="attendance-summary">
+          <div class="att-card" id="attOverallCard">
+            <span class="label">Overall Attendance</span>
+            <span class="value" id="overallAtt">0%</span>
+          </div>
+          <div class="att-card safe">
+            <span class="label">Subjects Safe (≥75%)</span>
+            <span class="value" id="safeCount">0</span>
+          </div>
+          <div class="att-card danger">
+            <span class="label">Subjects at Risk (<75%)</span>
+            <span class="value" id="riskCount">0</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Add / Update Subject</h3>
+          <div class="form-row">
+            <input type="text" id="attSubject" placeholder="Subject Name" />
+            <input type="number" id="attTotal" placeholder="Total Classes" min="1" />
+            <input type="number" id="attPresent" placeholder="Classes Attended" min="0" />
+            <button class="btn-primary" onclick="addAttendance()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Attendance Report</h3>
+          <div id="attendanceList" class="attendance-list"></div>
+          <p id="noAttendance" class="empty-msg">No attendance records yet. Add a subject above!</p>
+        </div>
+      </section>
+
+      <!-- ========== TIMETABLE TAB ========== -->
+      <section id="tab-timetable" class="tab">
+        <div class="tab-header">
+          <h2><i class="fas fa-clock"></i> Timetable Manager</h2>
+          <p>Organize your weekly class schedule</p>
+        </div>
+        <div class="card">
+          <h3>Add Class</h3>
+          <div class="form-row">
+            <select id="ttDay">
+              <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+              <option>Thursday</option><option>Friday</option><option>Saturday</option>
+            </select>
+            <input type="text" id="ttSubject" placeholder="Subject" />
+            <input type="time" id="ttStart" />
+            <input type="time" id="ttEnd" />
+            <input type="text" id="ttRoom" placeholder="Room / Location" />
+            <button class="btn-primary" onclick="addTimetableEntry()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="timetable-grid" id="timetableGrid"></div>
+        <p id="noTimetable" class="empty-msg">No classes scheduled. Add your first class above!</p>
+      </section>
+
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
