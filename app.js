@@ -1,238 +1,414 @@
-// ===================== STORAGE HELPERS =====================
-const save = (key, val) => localStorage.setItem(key, JSON.stringify(val));
-const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; } };
+/* ═══════════════════════════════════════════════════════════
+   StudyHub — Student Dashboard  |  app.js
+═══════════════════════════════════════════════════════════ */
 
-// ===================== NAVIGATION =====================
-function showTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  const btns = document.querySelectorAll('.nav-btn');
-  const map = { gpa: 0, attendance: 1, timetable: 2 };
-  btns[map[tab]].classList.add('active');
+// ── State ──────────────────────────────────────────────────
+let grades     = JSON.parse(localStorage.getItem('sd_grades')    || '[]');
+let attendance = JSON.parse(localStorage.getItem('sd_att')       || '[]');
+let timetable  = JSON.parse(localStorage.getItem('sd_tt')        || '[]');
+let todos      = JSON.parse(localStorage.getItem('sd_todos')     || '[]');
+let todoFilter = 'all';
+
+// ── Grade point map ────────────────────────────────────────
+const GP = {
+  'O':10,'A+':9,'A':8.5,'B+':8,'B':7.5,'C':7,'D':6,'F':0,
+  'S':10,'E':9,
+};
+function toPoints(g) {
+  if (GP[g.toUpperCase()] !== undefined) return GP[g.toUpperCase()];
+  const n = parseFloat(g);
+  return isNaN(n) ? 0 : Math.min(10, Math.max(0, n));
 }
 
-function clearAllData() {
-  if (confirm('Are you sure? This will delete ALL your data.')) {
-    localStorage.clear();
-    subjects = []; renderSubjects();
-    attendance = []; renderAttendance();
-    timetable = {}; renderTimetable();
+// ── Persist ────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('sd_grades',    JSON.stringify(grades));
+  localStorage.setItem('sd_att',       JSON.stringify(attendance));
+  localStorage.setItem('sd_tt',        JSON.stringify(timetable));
+  localStorage.setItem('sd_todos',     JSON.stringify(todos));
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'slideOut .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 2600);
+}
+
+// ── Clock ──────────────────────────────────────────────────
+function startClock() {
+  function tick() {
+    const n = new Date();
+    document.getElementById('clock').textContent =
+      n.toLocaleTimeString('en-US', { hour12: false });
   }
+  tick(); setInterval(tick, 1000);
 }
 
-// ===================== GPA CALCULATOR =====================
-let subjects = load('gpa_subjects', []);
-
-const gradeMap = { '10': 'O', '9': 'A+', '8': 'A', '7': 'B+', '6': 'B', '5': 'C', '0': 'F' };
-const badgeMap = { '10': 'badge-o', '9': 'badge-o', '8': 'badge-a', '7': 'badge-a', '6': 'badge-b', '5': 'badge-b', '0': 'badge-f' };
-
-function addSubject() {
-  const name = document.getElementById('subjectName').value.trim();
-  const credits = parseInt(document.getElementById('subjectCredits').value);
-  const grade = document.getElementById('subjectGrade').value;
-  if (!name || !credits || credits < 1) return alert('Please fill in subject name and valid credits.');
-  subjects.push({ id: Date.now(), name, credits, grade });
-  save('gpa_subjects', subjects);
-  document.getElementById('subjectName').value = '';
-  document.getElementById('subjectCredits').value = '';
-  renderSubjects();
+// ── Navigation ─────────────────────────────────────────────
+const TITLES = {
+  overview:'Overview', gpa:'GPA Tracker',
+  attendance:'Attendance', timetable:'Timetable', todo:'To-Do List'
+};
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+  document.getElementById('pageTitle').textContent = TITLES[id];
+  if (id === 'overview') refreshOverview();
+  if (id === 'gpa')      { renderGpaTable(); renderGpaBar(); }
+  if (id === 'attendance'){ renderAttCards(); renderAttBar(); }
+  if (id === 'timetable') renderTimetable();
+  if (id === 'todo')      renderTodos();
 }
 
-function deleteSubject(id) {
-  subjects = subjects.filter(s => s.id !== id);
-  save('gpa_subjects', subjects);
-  renderSubjects();
+// ── Sidebar / mobile ───────────────────────────────────────
+function initSidebar() {
+  const sb  = document.getElementById('sidebar');
+  const ov  = document.getElementById('overlay');
+  const ham = document.getElementById('hamburger');
+  const cls = document.getElementById('closeSidebar');
+  function open()  { sb.classList.add('open');  ov.classList.add('show'); }
+  function close() { sb.classList.remove('open'); ov.classList.remove('show'); }
+  ham.addEventListener('click', open);
+  cls.addEventListener('click', close);
+  ov.addEventListener('click',  close);
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+      if (window.innerWidth <= 768) close();
+    });
+  });
 }
 
+// ── Theme ──────────────────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('sd_theme') || 'dark';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.dataset.theme;
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+}
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('sd_theme', t);
+  document.getElementById('themeIcon').textContent  = t === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode';
+  rebuildCharts();
+}
+
+// ── Chart helpers ──────────────────────────────────────────
+let chartRefs = {};
+function destroyChart(key) {
+  if (chartRefs[key]) { chartRefs[key].destroy(); delete chartRefs[key]; }
+}
+function isDark() { return document.documentElement.dataset.theme !== 'light'; }
+function gridColor() { return isDark() ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)'; }
+function tickColor()  { return isDark() ? '#94a3b8' : '#64748b'; }
+function bgColor()    { return isDark() ? '#1e1e35' : '#ffffff'; }
+
+// ── GPA ────────────────────────────────────────────────────
+function addGrade() {
+  const sub  = document.getElementById('gpa-subject').value.trim();
+  const grd  = document.getElementById('gpa-grade').value.trim();
+  const cred = parseFloat(document.getElementById('gpa-credits').value);
+  if (!sub || !grd || isNaN(cred) || cred <= 0) { toast('Fill all GPA fields', 'error'); return; }
+  grades.push({ sub, grd, cred, pts: toPoints(grd) }); save();
+  ['gpa-subject','gpa-grade','gpa-credits'].forEach(id => document.getElementById(id).value = '');
+  renderGpaTable(); renderGpaBar(); refreshOverview();
+  toast(`Added ${sub}`, 'success');
+}
+function deleteGrade(i) {
+  grades.splice(i, 1); save();
+  renderGpaTable(); renderGpaBar(); refreshOverview();
+  toast('Removed', 'info');
+}
 function calcGPA() {
-  if (!subjects.length) return 0;
-  const totalCP = subjects.reduce((a, s) => a + s.credits * parseFloat(s.grade), 0);
-  const totalC = subjects.reduce((a, s) => a + s.credits, 0);
-  return totalC ? (totalCP / totalC).toFixed(2) : '0.00';
+  if (!grades.length) return null;
+  const tw = grades.reduce((s,g) => s + g.cred, 0);
+  const wp = grades.reduce((s,g) => s + g.pts * g.cred, 0);
+  return tw ? (wp / tw).toFixed(2) : null;
 }
-
-function gpaToLetter(gpa) {
-  if (gpa >= 9) return 'O';
-  if (gpa >= 8) return 'A+';
-  if (gpa >= 7) return 'A';
-  if (gpa >= 6) return 'B+';
-  if (gpa >= 5) return 'B';
-  if (gpa >= 4) return 'C';
-  return 'F';
-}
-
-function renderSubjects() {
-  const tbody = document.getElementById('subjectsBody');
-  const noMsg = document.getElementById('noSubjects');
-  const table = document.getElementById('subjectsTable');
-  tbody.innerHTML = '';
-  if (!subjects.length) { noMsg.style.display = 'block'; table.style.display = 'none'; return; }
-  noMsg.style.display = 'none'; table.style.display = 'table';
-  subjects.forEach(s => {
-    const tr = document.createElement('tr');
-    const gp = (parseFloat(s.grade) * s.credits).toFixed(1);
-    tr.innerHTML = `
-      <td><b>${s.name}</b></td>
-      <td>${s.credits}</td>
-      <td><span class="badge ${badgeMap[s.grade]}">${gradeMap[s.grade]}</span></td>
-      <td>${gp}</td>
-      <td><button class="btn-del" onclick="deleteSubject(${s.id})"><i class="fas fa-trash"></i></button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+function renderGpaTable() {
+  const tb = document.getElementById('gpa-table-body');
+  tb.innerHTML = grades.map((g,i) => `
+    <tr>
+      <td>${g.sub}</td><td>${g.grd}</td><td>${g.cred}</td><td>${g.pts.toFixed(1)}</td>
+      <td><button class="btn btn--danger" onclick="deleteGrade(${i})">✕</button></td>
+    </tr>`).join('');
   const gpa = calcGPA();
-  document.getElementById('currentGPA').textContent = gpa;
-  document.getElementById('gradeLetter').textContent = subjects.length ? gpaToLetter(parseFloat(gpa)) : 'N/A';
-  document.getElementById('totalSubjects').textContent = subjects.length;
-  document.getElementById('totalCredits').textContent = subjects.reduce((a, s) => a + s.credits, 0);
+  document.getElementById('gpa-display').textContent = gpa ?? '--';
 }
-
-// ===================== ATTENDANCE TRACKER =====================
-let attendance = load('attendance', []);
-
-function addAttendance() {
-  const subject = document.getElementById('attSubject').value.trim();
-  const total = parseInt(document.getElementById('attTotal').value);
-  const present = parseInt(document.getElementById('attPresent').value);
-  if (!subject || isNaN(total) || isNaN(present)) return alert('Please fill all attendance fields.');
-  if (present > total) return alert('Attended classes cannot exceed total classes.');
-  const existing = attendance.findIndex(a => a.subject.toLowerCase() === subject.toLowerCase());
-  if (existing >= 0) {
-    attendance[existing] = { ...attendance[existing], total, present };
-  } else {
-    attendance.push({ id: Date.now(), subject, total, present });
-  }
-  save('attendance', attendance);
-  document.getElementById('attSubject').value = '';
-  document.getElementById('attTotal').value = '';
-  document.getElementById('attPresent').value = '';
-  renderAttendance();
-}
-
-function deleteAttendance(id) {
-  attendance = attendance.filter(a => a.id !== id);
-  save('attendance', attendance);
-  renderAttendance();
-}
-
-function classesNeeded(present, total) {
-  // How many consecutive classes needed to reach 75%
-  if ((present / total) >= 0.75) return null;
-  let extra = 0;
-  while (((present + extra) / (total + extra)) < 0.75) extra++;
-  return extra;
-}
-
-function renderAttendance() {
-  const list = document.getElementById('attendanceList');
-  const noMsg = document.getElementById('noAttendance');
-  list.innerHTML = '';
-  if (!attendance.length) { noMsg.style.display = 'block'; updateAttSummary(); return; }
-  noMsg.style.display = 'none';
-  attendance.forEach(a => {
-    const pct = a.total ? Math.round((a.present / a.total) * 100) : 0;
-    const cls = pct >= 75 ? 'att-safe' : pct >= 60 ? 'att-warn' : 'att-risk';
-    const needed = classesNeeded(a.present, a.total);
-    const needStr = needed ? `<div class="classes-needed">Need ${needed} more class(es) to reach 75%</div>` : '';
-    const div = document.createElement('div');
-    div.className = `att-item ${cls}`;
-    div.innerHTML = `
-      <div>
-        <div class="att-subject">${a.subject}</div>
-        <div class="att-stats">${a.present} / ${a.total} classes</div>
-        ${needStr}
-      </div>
-      <div class="att-bar-wrap"><div class="att-bar" style="width:${pct}%"></div></div>
-      <div class="att-percent">${pct}%</div>
-      <button class="att-del" onclick="deleteAttendance(${a.id})"><i class="fas fa-times"></i></button>
-    `;
-    list.appendChild(div);
-  });
-  updateAttSummary();
-}
-
-function updateAttSummary() {
-  const totalPresent = attendance.reduce((a, s) => a + s.present, 0);
-  const totalClasses = attendance.reduce((a, s) => a + s.total, 0);
-  const overall = totalClasses ? Math.round((totalPresent / totalClasses) * 100) : 0;
-  const safe = attendance.filter(a => a.total && (a.present / a.total) >= 0.75).length;
-  const risk = attendance.filter(a => a.total && (a.present / a.total) < 0.75).length;
-  document.getElementById('overallAtt').textContent = overall + '%';
-  document.getElementById('safeCount').textContent = safe;
-  document.getElementById('riskCount').textContent = risk;
-  const card = document.getElementById('attOverallCard');
-  card.style.background = overall >= 75 ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#ef4444,#dc2626)';
-  card.querySelector('.value').style.color = '#fff';
-  card.querySelector('.label').style.color = 'rgba(255,255,255,0.8)';
-}
-
-// ===================== TIMETABLE MANAGER =====================
-let timetable = load('timetable', {});
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-function addTimetableEntry() {
-  const day = document.getElementById('ttDay').value;
-  const subject = document.getElementById('ttSubject').value.trim();
-  const start = document.getElementById('ttStart').value;
-  const end = document.getElementById('ttEnd').value;
-  const room = document.getElementById('ttRoom').value.trim();
-  if (!subject || !start || !end) return alert('Please fill Subject, Start Time, and End Time.');
-  if (!timetable[day]) timetable[day] = [];
-  timetable[day].push({ id: Date.now(), subject, start, end, room });
-  timetable[day].sort((a, b) => a.start.localeCompare(b.start));
-  save('timetable', timetable);
-  document.getElementById('ttSubject').value = '';
-  document.getElementById('ttStart').value = '';
-  document.getElementById('ttEnd').value = '';
-  document.getElementById('ttRoom').value = '';
-  renderTimetable();
-}
-
-function deleteTTEntry(day, id) {
-  timetable[day] = timetable[day].filter(e => e.id !== id);
-  save('timetable', timetable);
-  renderTimetable();
-}
-
-function fmt12(t) {
-  if (!t) return '';
-  const [h, m] = t.split(':');
-  const hr = parseInt(h);
-  return (hr % 12 || 12) + ':' + m + (hr >= 12 ? ' PM' : ' AM');
-}
-
-function renderTimetable() {
-  const grid = document.getElementById('timetableGrid');
-  const noMsg = document.getElementById('noTimetable');
-  grid.innerHTML = '';
-  const hasAny = DAYS.some(d => timetable[d] && timetable[d].length);
-  if (!hasAny) { noMsg.style.display = 'block'; return; }
-  noMsg.style.display = 'none';
-  DAYS.forEach(day => {
-    const entries = timetable[day] || [];
-    const col = document.createElement('div');
-    col.className = 'tt-day-col';
-    col.innerHTML = `<div class="tt-day-title">${day}</div>`;
-    if (!entries.length) {
-      col.innerHTML += `<div class="tt-empty">No classes</div>`;
-    } else {
-      entries.forEach(e => {
-        col.innerHTML += `
-          <div class="tt-entry">
-            <button class="tt-del" onclick="deleteTTEntry('${day}',${e.id})"><i class="fas fa-times"></i></button>
-            <div class="tt-entry-subject">${e.subject}</div>
-            <div class="tt-entry-time">${fmt12(e.start)} – ${fmt12(e.end)}</div>
-            ${e.room ? `<div class="tt-entry-room"><i class="fas fa-map-marker-alt"></i> ${e.room}</div>` : ''}
-          </div>
-        `;
-      });
+function renderGpaBar() {
+  destroyChart('gradesBar');
+  if (!grades.length) return;
+  const ctx = document.getElementById('gradesBar').getContext('2d');
+  chartRefs.gradesBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: grades.map(g => g.sub),
+      datasets: [{ label: 'Grade Points', data: grades.map(g => g.pts),
+        backgroundColor: grades.map((_,i) => `hsl(${240 + i*25},70%,60%)`),
+        borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 10, grid: { color: gridColor() }, ticks: { color: tickColor() } },
+        x: { grid: { display: false }, ticks: { color: tickColor() } }
+      }
     }
-    grid.appendChild(col);
   });
 }
 
-// ===================== INIT =====================
-renderSubjects();
-renderAttendance();
-renderTimetable();
+// ── Attendance ─────────────────────────────────────────────
+function addAttendance() {
+  const sub  = document.getElementById('att-subject').value.trim();
+  const pres = parseInt(document.getElementById('att-present').value);
+  const tot  = parseInt(document.getElementById('att-total').value);
+  if (!sub || isNaN(pres) || isNaN(tot) || tot <= 0 || pres > tot) { toast('Check attendance values', 'error'); return; }
+  const existing = attendance.findIndex(a => a.sub === sub);
+  if (existing >= 0) attendance[existing] = { sub, pres, tot };
+  else attendance.push({ sub, pres, tot });
+  save();
+  ['att-subject','att-present','att-total'].forEach(id => document.getElementById(id).value = '');
+  renderAttCards(); renderAttBar(); refreshOverview();
+  toast(`Attendance saved for ${sub}`, 'success');
+}
+function deleteAtt(i) {
+  attendance.splice(i, 1); save();
+  renderAttCards(); renderAttBar(); refreshOverview();
+  toast('Removed', 'info');
+}
+function renderAttCards() {
+  const el = document.getElementById('att-cards');
+  el.innerHTML = attendance.map((a,i) => {
+    const pct = Math.round(a.pres / a.tot * 100);
+    const cls = pct >= 75 ? 'safe' : pct >= 60 ? 'warn' : 'danger';
+    return `<div class="att-card">
+      <div class="att-card-top">
+        <span class="att-sub">${a.sub}</span>
+        <span class="att-pct ${cls}">${pct}%</span>
+      </div>
+      <div class="att-bar-track"><div class="att-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="att-info">${a.pres} / ${a.tot} classes attended
+        <button class="btn btn--danger" style="padding:.15rem .5rem;font-size:.7rem;float:right" onclick="deleteAtt(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderAttBar() {
+  destroyChart('attBar');
+  if (!attendance.length) return;
+  const ctx = document.getElementById('attBar').getContext('2d');
+  const pcts = attendance.map(a => Math.round(a.pres / a.tot * 100));
+  chartRefs.attBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: attendance.map(a => a.sub),
+      datasets: [{ label: '% Attendance', data: pcts,
+        backgroundColor: pcts.map(p => p >= 75 ? 'rgba(16,185,129,.7)' : p >= 60 ? 'rgba(245,158,11,.7)' : 'rgba(244,63,94,.7)'),
+        borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, grid: { color: gridColor() }, ticks: { color: tickColor(), callback: v => v + '%' } },
+        x: { grid: { display: false }, ticks: { color: tickColor() } }
+      }
+    }
+  });
+}
+
+// ── Timetable ──────────────────────────────────────────────
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+function addTimetable() {
+  const day = document.getElementById('tt-day').value;
+  const time = document.getElementById('tt-time').value;
+  const sub  = document.getElementById('tt-subject').value.trim();
+  const color = document.getElementById('tt-color').value;
+  if (!time || !sub) { toast('Fill day, time & subject', 'error'); return; }
+  timetable.push({ day, time, sub, color }); save();
+  ['tt-time','tt-subject'].forEach(id => document.getElementById(id).value = '');
+  renderTimetable();
+  toast(`${sub} added to ${day}`, 'success');
+}
+function deleteTT(i) {
+  timetable.splice(i, 1); save(); renderTimetable();
+  toast('Removed', 'info');
+}
+function renderTimetable() {
+  const grid = document.getElementById('timetable-grid');
+  grid.innerHTML = DAYS.map(day => {
+    const entries = timetable
+      .map((e,i) => ({...e, i}))
+      .filter(e => e.day === day)
+      .sort((a,b) => a.time.localeCompare(b.time));
+    return `<div class="tt-day-col">
+      <div class="tt-day-header">${day}</div>
+      <div class="tt-entries">${
+        entries.length
+          ? entries.map(e => `
+              <div class="tt-entry ${e.color}">
+                <span>${e.time} — ${e.sub}</span>
+                <button class="tt-del" onclick="deleteTT(${e.i})">✕</button>
+              </div>`).join('')
+          : '<div style="font-size:.72rem;color:var(--text3);padding:.25rem">—</div>'
+      }</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Todo ───────────────────────────────────────────────────
+function addTodo() {
+  const text = document.getElementById('todo-text').value.trim();
+  const due  = document.getElementById('todo-due').value;
+  const pri  = document.getElementById('todo-priority').value;
+  if (!text) { toast('Enter a task', 'error'); return; }
+  todos.push({ text, due, pri, done: false, id: Date.now() }); save();
+  document.getElementById('todo-text').value = '';
+  document.getElementById('todo-due').value  = '';
+  renderTodos(); refreshOverview();
+  toast('Task added', 'success');
+}
+function toggleTodo(id) {
+  const t = todos.find(t => t.id === id);
+  if (t) { t.done = !t.done; save(); renderTodos(); refreshOverview(); }
+}
+function deleteTodo(id) {
+  todos = todos.filter(t => t.id !== id); save();
+  renderTodos(); refreshOverview();
+  toast('Task removed', 'info');
+}
+function renderTodos() {
+  let list = [...todos];
+  if (todoFilter !== 'all') {
+    if (todoFilter === 'done') list = list.filter(t => t.done);
+    else list = list.filter(t => t.pri === todoFilter && !t.done);
+  }
+  const el = document.getElementById('todo-list');
+  el.innerHTML = list.map(t => `
+    <li class="todo-item ${t.done ? 'done' : ''}">
+      <div class="priority-dot ${t.pri}"></div>
+      <input type="checkbox" class="todo-check" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id})" />
+      <span class="todo-text">${t.text}</span>
+      <div class="todo-meta">
+        ${t.due ? `<span>📅 ${t.due}</span>` : ''}
+      </div>
+      <button class="todo-del" onclick="deleteTodo(${t.id})">🗑️</button>
+    </li>`).join('');
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === todoFilter);
+  });
+}
+function initTodoFilters() {
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      todoFilter = btn.dataset.filter;
+      renderTodos();
+    });
+  });
+}
+
+// ── Overview ───────────────────────────────────────────────
+function setRing(id, pct) {
+  const el = document.getElementById(id);
+  if (el) el.setAttribute('stroke-dasharray', `${pct} 100`);
+}
+function refreshOverview() {
+  // GPA
+  const gpa = calcGPA();
+  document.getElementById('ov-gpa').textContent = gpa ?? '--';
+  setRing('ov-gpa-ring', gpa ? (parseFloat(gpa) / 10 * 100) : 0);
+
+  // Attendance avg
+  const attAvg = attendance.length
+    ? Math.round(attendance.reduce((s,a) => s + a.pres/a.tot*100, 0) / attendance.length)
+    : null;
+  document.getElementById('ov-att').textContent = attAvg != null ? attAvg + '%' : '--%';
+  setRing('ov-att-ring', attAvg ?? 0);
+
+  // Todos
+  const done = todos.filter(t => t.done).length;
+  const total = todos.length;
+  document.getElementById('ov-tasks').textContent = `${done} / ${total}`;
+  setRing('ov-tasks-ring', total ? Math.round(done/total*100) : 0);
+
+  // Subjects
+  const uniq = new Set(grades.map(g => g.sub)).size;
+  document.getElementById('ov-subjects').textContent = uniq;
+  setRing('ov-sub-ring', Math.min(100, uniq * 10));
+
+  // Overview line chart
+  destroyChart('gpaLine');
+  const ctx1 = document.getElementById('gpaLineChart').getContext('2d');
+  chartRefs.gpaLine = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: grades.length ? grades.map(g => g.sub) : ['No data'],
+      datasets: [{
+        label: 'Grade Points', fill: true,
+        data: grades.length ? grades.map(g => g.pts) : [0],
+        backgroundColor: 'rgba(99,102,241,.25)',
+        borderColor: '#6366f1', borderWidth: 2,
+        borderRadius: 6, borderSkipped: false,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: tickColor() } } },
+      scales: {
+        y: { min:0, max:10, grid:{color:gridColor()}, ticks:{color:tickColor()} },
+        x: { grid:{display:false}, ticks:{color:tickColor()} }
+      }
+    }
+  });
+
+  // Donut
+  destroyChart('attDonut');
+  const ctx2 = document.getElementById('attDonut').getContext('2d');
+  const present = attendance.reduce((s,a) => s + a.pres, 0);
+  const absent  = attendance.reduce((s,a) => s + (a.tot - a.pres), 0);
+  chartRefs.attDonut = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: ['Present','Absent'],
+      datasets: [{
+        data: present + absent ? [present, absent] : [1,0],
+        backgroundColor: ['rgba(16,185,129,.8)','rgba(244,63,94,.6)'],
+        borderWidth: 0, hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: tickColor(), padding: 12, boxWidth: 10 } }
+      }
+    }
+  });
+}
+
+function rebuildCharts() {
+  const tab = document.querySelector('.tab-panel.active')?.id?.replace('tab-','');
+  if (tab === 'overview')   refreshOverview();
+  if (tab === 'gpa')        renderGpaBar();
+  if (tab === 'attendance') renderAttBar();
+}
+
+// ── Boot ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  startClock();
+  initSidebar();
+  initTheme();
+  initTodoFilters();
+  refreshOverview();
+  toast('Welcome back! 👋', 'info');
+});

@@ -1,157 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <div class="app">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <i class="fas fa-graduation-cap"></i>
-          <span>StudyBoard</span>
-        </div>
-        <p class="student-name" id="studentNameDisplay">Matam Rohith</p>
-      </div>
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" onclick="showTab('gpa')">
-          <i class="fas fa-chart-line"></i> GPA Calculator
-        </button>
-        <button class="nav-btn" onclick="showTab('attendance')">
-          <i class="fas fa-calendar-check"></i> Attendance
-        </button>
-        <button class="nav-btn" onclick="showTab('timetable')">
-          <i class="fas fa-clock"></i> Timetable
-        </button>
-      </nav>
-      <div class="sidebar-footer">
-        <button class="clear-btn" onclick="clearAllData()"><i class="fas fa-trash"></i> Clear All Data</button>
-      </div>
-    </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
+<!-- ░░ TOAST ░░ -->
+<div id="toast-container"></div>
 
-      <!-- ========== GPA TAB ========== -->
-      <section id="tab-gpa" class="tab active">
-        <div class="tab-header">
-          <h2><i class="fas fa-chart-line"></i> GPA Calculator</h2>
-          <p>Track your grades and calculate your cumulative GPA</p>
-        </div>
-        <div class="gpa-summary">
-          <div class="gpa-card big">
-            <span class="label">Current GPA</span>
-            <span class="value" id="currentGPA">0.00</span>
-            <span class="grade-letter" id="gradeLetter">N/A</span>
-          </div>
-          <div class="gpa-card">
-            <span class="label">Total Subjects</span>
-            <span class="value" id="totalSubjects">0</span>
-          </div>
-          <div class="gpa-card">
-            <span class="label">Total Credits</span>
-            <span class="value" id="totalCredits">0</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Add Subject</h3>
-          <div class="form-row">
-            <input type="text" id="subjectName" placeholder="Subject Name (e.g. Data Structures)" />
-            <input type="number" id="subjectCredits" placeholder="Credits" min="1" max="6" />
-            <select id="subjectGrade">
-              <option value="10">O (10)</option>
-              <option value="9">A+ (9)</option>
-              <option value="8">A (8)</option>
-              <option value="7">B+ (7)</option>
-              <option value="6">B (6)</option>
-              <option value="5">C (5)</option>
-              <option value="0">F (0)</option>
-            </select>
-            <button class="btn-primary" onclick="addSubject()"><i class="fas fa-plus"></i> Add</button>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Subjects</h3>
-          <div class="table-wrap">
-            <table id="subjectsTable">
-              <thead>
-                <tr><th>Subject</th><th>Credits</th><th>Grade</th><th>Grade Points</th><th>Action</th></tr>
-              </thead>
-              <tbody id="subjectsBody"></tbody>
-            </table>
-          </div>
-          <p id="noSubjects" class="empty-msg">No subjects added yet. Add your first subject above!</p>
-        </div>
-      </section>
-
-      <!-- ========== ATTENDANCE TAB ========== -->
-      <section id="tab-attendance" class="tab">
-        <div class="tab-header">
-          <h2><i class="fas fa-calendar-check"></i> Attendance Tracker</h2>
-          <p>Monitor your attendance percentage per subject</p>
-        </div>
-        <div class="attendance-summary">
-          <div class="att-card" id="attOverallCard">
-            <span class="label">Overall Attendance</span>
-            <span class="value" id="overallAtt">0%</span>
-          </div>
-          <div class="att-card safe">
-            <span class="label">Subjects Safe (≥75%)</span>
-            <span class="value" id="safeCount">0</span>
-          </div>
-          <div class="att-card danger">
-            <span class="label">Subjects at Risk (<75%)</span>
-            <span class="value" id="riskCount">0</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Add / Update Subject</h3>
-          <div class="form-row">
-            <input type="text" id="attSubject" placeholder="Subject Name" />
-            <input type="number" id="attTotal" placeholder="Total Classes" min="1" />
-            <input type="number" id="attPresent" placeholder="Classes Attended" min="0" />
-            <button class="btn-primary" onclick="addAttendance()"><i class="fas fa-plus"></i> Add</button>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Attendance Report</h3>
-          <div id="attendanceList" class="attendance-list"></div>
-          <p id="noAttendance" class="empty-msg">No attendance records yet. Add a subject above!</p>
-        </div>
-      </section>
-
-      <!-- ========== TIMETABLE TAB ========== -->
-      <section id="tab-timetable" class="tab">
-        <div class="tab-header">
-          <h2><i class="fas fa-clock"></i> Timetable Manager</h2>
-          <p>Organize your weekly class schedule</p>
-        </div>
-        <div class="card">
-          <h3>Add Class</h3>
-          <div class="form-row">
-            <select id="ttDay">
-              <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
-              <option>Thursday</option><option>Friday</option><option>Saturday</option>
-            </select>
-            <input type="text" id="ttSubject" placeholder="Subject" />
-            <input type="time" id="ttStart" />
-            <input type="time" id="ttEnd" />
-            <input type="text" id="ttRoom" placeholder="Room / Location" />
-            <button class="btn-primary" onclick="addTimetableEntry()"><i class="fas fa-plus"></i> Add</button>
-          </div>
-        </div>
-        <div class="timetable-grid" id="timetableGrid"></div>
-        <p id="noTimetable" class="empty-msg">No classes scheduled. Add your first class above!</p>
-      </section>
-
-    </main>
+<!-- ░░ SIDEBAR ░░ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">🎓</span>
+      <span class="logo-text">StudyHub</span>
+    </div>
+    <button class="close-sidebar" id="closeSidebar">✕</button>
   </div>
-  <script src="app.js"></script>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-tab="overview">   <span class="nav-icon">📊</span> Overview   </button>
+    <button class="nav-item" data-tab="gpa">               <span class="nav-icon">📈</span> GPA Tracker</button>
+    <button class="nav-item" data-tab="attendance">        <span class="nav-icon">✅</span> Attendance  </button>
+    <button class="nav-item" data-tab="timetable">         <span class="nav-icon">📅</span> Timetable   </button>
+    <button class="nav-item" data-tab="todo">              <span class="nav-icon">📝</span> To-Do List  </button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="themeToggle">
+      <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ░░ OVERLAY ░░ -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ░░ MAIN ░░ -->
+<div class="layout">
+  <header class="topbar">
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="topbar-center">
+      <h1 class="topbar-title" id="pageTitle">Overview</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ░░ TAB: OVERVIEW ░░ -->
+    <section class="tab-panel active" id="tab-overview">
+      <div class="stats-grid">
+        <div class="stat-card" style="--accent:#6366f1">
+          <div class="stat-icon" style="background:rgba(99,102,241,.15)">📈</div>
+          <div class="stat-body">
+            <p class="stat-label">Current GPA</p>
+            <p class="stat-value" id="ov-gpa">--</p>
+          </div>
+          <svg class="ring-svg" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+            <circle class="ring-fill" id="ov-gpa-ring" cx="18" cy="18" r="15.9"
+              stroke="#6366f1" stroke-dasharray="0 100" />
+          </svg>
+        </div>
+        <div class="stat-card" style="--accent:#10b981">
+          <div class="stat-icon" style="background:rgba(16,185,129,.15)">✅</div>
+          <div class="stat-body">
+            <p class="stat-label">Attendance</p>
+            <p class="stat-value" id="ov-att">--%</p>
+          </div>
+          <svg class="ring-svg" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+            <circle class="ring-fill" id="ov-att-ring" cx="18" cy="18" r="15.9"
+              stroke="#10b981" stroke-dasharray="0 100" />
+          </svg>
+        </div>
+        <div class="stat-card" style="--accent:#f59e0b">
+          <div class="stat-icon" style="background:rgba(245,158,11,.15)">📝</div>
+          <div class="stat-body">
+            <p class="stat-label">Tasks Done</p>
+            <p class="stat-value" id="ov-tasks">0 / 0</p>
+          </div>
+          <svg class="ring-svg" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+            <circle class="ring-fill" id="ov-tasks-ring" cx="18" cy="18" r="15.9"
+              stroke="#f59e0b" stroke-dasharray="0 100" />
+          </svg>
+        </div>
+        <div class="stat-card" style="--accent:#8b5cf6">
+          <div class="stat-icon" style="background:rgba(139,92,246,.15)">📚</div>
+          <div class="stat-body">
+            <p class="stat-label">Subjects</p>
+            <p class="stat-value" id="ov-subjects">0</p>
+          </div>
+          <svg class="ring-svg" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+            <circle class="ring-fill" id="ov-sub-ring" cx="18" cy="18" r="15.9"
+              stroke="#8b5cf6" stroke-dasharray="80 100" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3 class="chart-title">GPA Trend</h3>
+          <canvas id="gpaLineChart"></canvas>
+        </div>
+        <div class="chart-card chart-card--small">
+          <h3 class="chart-title">Attendance Split</h3>
+          <canvas id="attDonut"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ TAB: GPA ░░ -->
+    <section class="tab-panel" id="tab-gpa">
+      <div class="panel-header">
+        <h2 class="panel-title">GPA Tracker</h2>
+      </div>
+      <div class="form-card">
+        <div class="form-row">
+          <input id="gpa-subject" class="inp" placeholder="Subject name" />
+          <input id="gpa-grade"   class="inp" placeholder="Grade (e.g. A, B+, 9.0)" />
+          <input id="gpa-credits" class="inp" type="number" placeholder="Credits" min="1" />
+          <button class="btn btn--primary" onclick="addGrade()">Add</button>
+        </div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Subject</th><th>Grade</th><th>Credits</th><th>Points</th><th></th></tr></thead>
+          <tbody id="gpa-table-body"></tbody>
+        </table>
+      </div>
+      <div class="gpa-summary">
+        <div class="gpa-badge">Cumulative GPA: <strong id="gpa-display">--</strong></div>
+      </div>
+      <div class="chart-card" style="margin-top:1.5rem">
+        <h3 class="chart-title">Grades Bar Chart</h3>
+        <canvas id="gradesBar"></canvas>
+      </div>
+    </section>
+
+    <!-- ░░ TAB: ATTENDANCE ░░ -->
+    <section class="tab-panel" id="tab-attendance">
+      <div class="panel-header">
+        <h2 class="panel-title">Attendance Tracker</h2>
+      </div>
+      <div class="form-card">
+        <div class="form-row">
+          <input  id="att-subject" class="inp" placeholder="Subject" />
+          <input  id="att-present" class="inp" type="number" placeholder="Classes attended" min="0" />
+          <input  id="att-total"   class="inp" type="number" placeholder="Total classes" min="1" />
+          <button class="btn btn--primary" onclick="addAttendance()">Add</button>
+        </div>
+      </div>
+      <div class="att-cards" id="att-cards"></div>
+      <div class="chart-card" style="margin-top:1.5rem">
+        <h3 class="chart-title">Per-Subject Attendance</h3>
+        <canvas id="attBar"></canvas>
+      </div>
+    </section>
+
+    <!-- ░░ TAB: TIMETABLE ░░ -->
+    <section class="tab-panel" id="tab-timetable">
+      <div class="panel-header">
+        <h2 class="panel-title">Weekly Timetable</h2>
+      </div>
+      <div class="form-card">
+        <div class="form-row">
+          <select id="tt-day" class="inp">
+            <option value="Mon">Monday</option>
+            <option value="Tue">Tuesday</option>
+            <option value="Wed">Wednesday</option>
+            <option value="Thu">Thursday</option>
+            <option value="Fri">Friday</option>
+            <option value="Sat">Saturday</option>
+          </select>
+          <input id="tt-time"    class="inp" type="time" />
+          <input id="tt-subject" class="inp" placeholder="Subject" />
+          <select id="tt-color" class="inp">
+            <option value="indigo">Indigo</option>
+            <option value="sky">Sky Blue</option>
+            <option value="emerald">Emerald</option>
+            <option value="rose">Rose</option>
+            <option value="violet">Violet</option>
+            <option value="amber">Amber</option>
+          </select>
+          <button class="btn btn--primary" onclick="addTimetable()">Add</button>
+        </div>
+      </div>
+      <div class="timetable-grid" id="timetable-grid"></div>
+    </section>
+
+    <!-- ░░ TAB: TODO ░░ -->
+    <section class="tab-panel" id="tab-todo">
+      <div class="panel-header">
+        <h2 class="panel-title">To-Do List</h2>
+      </div>
+      <div class="form-card">
+        <div class="form-row">
+          <input  id="todo-text"     class="inp" placeholder="Task description" />
+          <input  id="todo-due"      class="inp" type="date" />
+          <select id="todo-priority" class="inp">
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <button class="btn btn--primary" onclick="addTodo()">Add</button>
+        </div>
+      </div>
+      <div class="todo-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="high">🔴 High</button>
+        <button class="filter-btn" data-filter="medium">🟡 Medium</button>
+        <button class="filter-btn" data-filter="low">🟢 Low</button>
+        <button class="filter-btn" data-filter="done">✅ Done</button>
+      </div>
+      <ul class="todo-list" id="todo-list"></ul>
+    </section>
+
+  </main>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
