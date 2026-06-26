@@ -11,37 +11,24 @@
 </head>
 <body>
 
-<!-- ░░ TOAST ░░ -->
 <div id="toast-container"></div>
 
-<!-- ░░ SIDEBAR ░░ -->
+<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo">
-      <span class="logo-icon">🎓</span>
-      <span class="logo-text">StudyHub</span>
-    </div>
+    <div class="logo"><span class="logo-icon">🎓</span><span class="logo-text">StudyHub</span></div>
     <button class="close-sidebar" id="closeSidebar">✕</button>
   </div>
-
-  <!-- Student mini-card in sidebar -->
-  <div class="sidebar-student">
-    <div class="ss-avatar" id="ss-avatar">?</div>
-    <div class="ss-info">
-      <div class="ss-name" id="ss-name">Student Name</div>
-      <div class="ss-roll" id="ss-roll">Roll: —</div>
-    </div>
-  </div>
-
   <nav class="sidebar-nav">
     <button class="nav-item active" data-tab="overview">  <span class="nav-icon">📊</span> Overview    </button>
-    <button class="nav-item"        data-tab="profile">   <span class="nav-icon">👤</span> My Profile  </button>
-    <button class="nav-item"        data-tab="gpa">        <span class="nav-icon">📈</span> GPA Tracker </button>
-    <button class="nav-item"        data-tab="attendance"> <span class="nav-icon">✅</span> Attendance  </button>
-    <button class="nav-item"        data-tab="timetable">  <span class="nav-icon">📅</span> Timetable   </button>
-    <button class="nav-item"        data-tab="todo">       <span class="nav-icon">📝</span> To-Do List  </button>
+    <button class="nav-item" data-tab="subjects">          <span class="nav-icon">📚</span> Subjects    </button>
+    <button class="nav-item" data-tab="gpa">               <span class="nav-icon">📈</span> GPA Tracker </button>
+    <button class="nav-item" data-tab="attendance">        <span class="nav-icon">✅</span> Attendance  </button>
+    <button class="nav-item" data-tab="timetable">         <span class="nav-icon">📅</span> Timetable   </button>
+    <button class="nav-item" data-tab="todo">              <span class="nav-icon">📝</span> To-Do List  </button>
+    <button class="nav-item" data-tab="analytics">         <span class="nav-icon">🔬</span> Analytics   </button>
+    <button class="nav-item" data-tab="notes">             <span class="nav-icon">📓</span> Notes       </button>
   </nav>
-
   <div class="sidebar-footer">
     <button class="theme-toggle" id="themeToggle">
       <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
@@ -49,283 +36,122 @@
   </div>
 </aside>
 
-<!-- ░░ OVERLAY ░░ -->
 <div class="overlay" id="overlay"></div>
 
-<!-- ░░ MAIN LAYOUT ░░ -->
+<!-- MAIN -->
 <div class="layout">
-
-  <!-- TOPBAR -->
   <header class="topbar">
     <button class="hamburger" id="hamburger">☰</button>
-    <div class="topbar-center">
-      <h1 class="topbar-title" id="pageTitle">Overview</h1>
-    </div>
+    <div class="topbar-center"><h1 class="topbar-title" id="pageTitle">Overview</h1></div>
     <div class="topbar-right">
+      <div class="streak-badge" id="streakBadge" title="Study streak">🔥 <span id="streakCount">0</span>d</div>
       <div class="clock" id="clock">--:--:--</div>
-      <div class="avatar" id="topbar-avatar" title="My Profile" style="cursor:pointer">?</div>
+      <div class="avatar">RK</div>
     </div>
   </header>
 
   <main class="main-content">
 
-    <!-- ░░ TAB: OVERVIEW ░░ -->
+    <!-- TAB: OVERVIEW -->
     <section class="tab-panel active" id="tab-overview">
-
-      <!-- Welcome banner -->
-      <div class="welcome-banner" id="welcome-banner">
-        <div class="wb-left">
-          <div class="wb-avatar" id="wb-avatar">?</div>
-          <div>
-            <div class="wb-greeting" id="wb-greeting">Welcome back!</div>
-            <div class="wb-sub" id="wb-sub">Track your academic progress below.</div>
-          </div>
-        </div>
-        <div class="wb-meta">
-          <span id="wb-roll"></span>
-          <span id="wb-class"></span>
-          <span id="wb-year"></span>
-        </div>
-      </div>
-
+      <div class="quote-banner" id="quoteBanner"></div>
       <div class="stats-grid">
         <div class="stat-card" style="--accent:#6366f1">
           <div class="stat-icon" style="background:rgba(99,102,241,.15)">📈</div>
-          <div class="stat-body">
-            <p class="stat-label">Current GPA</p>
-            <p class="stat-value" id="ov-gpa">--</p>
-          </div>
-          <svg class="ring-svg" viewBox="0 0 36 36">
-            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
-            <circle class="ring-fill" id="ov-gpa-ring" cx="18" cy="18" r="15.9"
-              stroke="#6366f1" stroke-dasharray="0 100" />
-          </svg>
+          <div class="stat-body"><p class="stat-label">Current GPA</p><p class="stat-value" id="ov-gpa">--</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-gpa-ring" cx="18" cy="18" r="15.9" stroke="#6366f1" stroke-dasharray="0 100"/></svg>
         </div>
         <div class="stat-card" style="--accent:#10b981">
           <div class="stat-icon" style="background:rgba(16,185,129,.15)">✅</div>
-          <div class="stat-body">
-            <p class="stat-label">Avg Attendance</p>
-            <p class="stat-value" id="ov-att">--%</p>
-          </div>
-          <svg class="ring-svg" viewBox="0 0 36 36">
-            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
-            <circle class="ring-fill" id="ov-att-ring" cx="18" cy="18" r="15.9"
-              stroke="#10b981" stroke-dasharray="0 100" />
-          </svg>
+          <div class="stat-body"><p class="stat-label">Attendance</p><p class="stat-value" id="ov-att">--%</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-att-ring" cx="18" cy="18" r="15.9" stroke="#10b981" stroke-dasharray="0 100"/></svg>
         </div>
         <div class="stat-card" style="--accent:#f59e0b">
           <div class="stat-icon" style="background:rgba(245,158,11,.15)">📝</div>
-          <div class="stat-body">
-            <p class="stat-label">Tasks Done</p>
-            <p class="stat-value" id="ov-tasks">0 / 0</p>
-          </div>
-          <svg class="ring-svg" viewBox="0 0 36 36">
-            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
-            <circle class="ring-fill" id="ov-tasks-ring" cx="18" cy="18" r="15.9"
-              stroke="#f59e0b" stroke-dasharray="0 100" />
-          </svg>
+          <div class="stat-body"><p class="stat-label">Tasks Done</p><p class="stat-value" id="ov-tasks">0/0</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-tasks-ring" cx="18" cy="18" r="15.9" stroke="#f59e0b" stroke-dasharray="0 100"/></svg>
         </div>
         <div class="stat-card" style="--accent:#8b5cf6">
           <div class="stat-icon" style="background:rgba(139,92,246,.15)">📚</div>
-          <div class="stat-body">
-            <p class="stat-label">Subjects</p>
-            <p class="stat-value" id="ov-subjects">0</p>
-          </div>
-          <svg class="ring-svg" viewBox="0 0 36 36">
-            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
-            <circle class="ring-fill" id="ov-sub-ring" cx="18" cy="18" r="15.9"
-              stroke="#8b5cf6" stroke-dasharray="80 100" />
-          </svg>
+          <div class="stat-body"><p class="stat-label">Subjects</p><p class="stat-value" id="ov-subjects">0</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-sub-ring" cx="18" cy="18" r="15.9" stroke="#8b5cf6" stroke-dasharray="0 100"/></svg>
+        </div>
+        <div class="stat-card" style="--accent:#ec4899">
+          <div class="stat-icon" style="background:rgba(236,72,153,.15)">⏱️</div>
+          <div class="stat-body"><p class="stat-label">Study Hours</p><p class="stat-value" id="ov-hours">0h</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-hours-ring" cx="18" cy="18" r="15.9" stroke="#ec4899" stroke-dasharray="0 100"/></svg>
+        </div>
+        <div class="stat-card" style="--accent:#14b8a6">
+          <div class="stat-icon" style="background:rgba(20,184,166,.15)">📓</div>
+          <div class="stat-body"><p class="stat-label">Notes</p><p class="stat-value" id="ov-notes">0</p></div>
+          <svg class="ring-svg" viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15.9"/><circle class="ring-fill" id="ov-notes-ring" cx="18" cy="18" r="15.9" stroke="#14b8a6" stroke-dasharray="0 100"/></svg>
         </div>
       </div>
-
       <div class="charts-row">
-        <div class="chart-card">
-          <h3 class="chart-title">GPA Trend (by Subject)</h3>
-          <canvas id="gpaLineChart"></canvas>
+        <div class="chart-card"><h3 class="chart-title">GPA Trend</h3><canvas id="gpaLineChart"></canvas></div>
+        <div class="chart-card chart-card--small"><h3 class="chart-title">Attendance Split</h3><canvas id="attDonut"></canvas></div>
+      </div>
+
+      <!-- Study Timer -->
+      <div class="timer-card">
+        <h3 class="chart-title">⏱️ Study Timer</h3>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="timer-controls">
+          <button class="btn btn--primary" id="timerStart">Start</button>
+          <button class="btn btn--outline" id="timerPause">Pause</button>
+          <button class="btn btn--outline" id="timerReset">Reset</button>
+          <select class="inp" id="timerMode" style="max-width:140px">
+            <option value="25">Pomodoro 25m</option>
+            <option value="50">Deep Work 50m</option>
+            <option value="10">Short 10m</option>
+            <option value="5">Break 5m</option>
+          </select>
         </div>
-        <div class="chart-card chart-card--small">
-          <h3 class="chart-title">Attendance Split</h3>
-          <canvas id="attDonut"></canvas>
-        </div>
+        <div class="timer-sessions">Sessions today: <strong id="timerSessions">0</strong></div>
       </div>
     </section>
 
-    <!-- ░░ TAB: PROFILE ░░ -->
-    <section class="tab-panel" id="tab-profile">
-      <div class="panel-header">
-        <h2 class="panel-title">👤 Student Profile</h2>
-        <p style="font-size:.8rem;color:var(--text2);margin-top:.25rem">All information is stored locally on your device.</p>
-      </div>
-
-      <div class="profile-grid">
-
-        <!-- Left: ID card -->
-        <div class="profile-id-card">
-          <div class="pic-wrapper">
-            <div class="pic-circle" id="prof-pic-display">?</div>
-            <div class="pic-edit-hint">Edit initials below</div>
-          </div>
-          <div class="id-name"  id="id-name">Student Name</div>
-          <div class="id-roll"  id="id-roll">Roll No: —</div>
-          <div class="id-class" id="id-class">Class: —</div>
-          <div class="id-badges">
-            <span class="id-badge" id="id-section-badge"></span>
-            <span class="id-badge" id="id-year-badge"></span>
-          </div>
-          <div class="id-school">🏫 School / College</div>
-        </div>
-
-        <!-- Right: edit form -->
-        <div class="profile-form-wrap">
-
-          <!-- Personal Info -->
-          <div class="pf-section">
-            <div class="pf-section-title">👤 Personal Information</div>
-            <div class="pf-grid">
-              <div class="pf-field">
-                <label class="pf-label">Full Name *</label>
-                <input id="pf-name" class="inp" placeholder="e.g. Matam Rohith" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Roll Number *</label>
-                <input id="pf-roll" class="inp" placeholder="e.g. 22CSE0042" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Date of Birth</label>
-                <input id="pf-dob" class="inp" type="date" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Gender</label>
-                <select id="pf-gender" class="inp">
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Student Email</label>
-                <input id="pf-email" class="inp" type="email" placeholder="student@email.com" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Phone Number</label>
-                <input id="pf-phone" class="inp" type="tel" placeholder="+91 9XXXXXXXXX" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Academic Info -->
-          <div class="pf-section">
-            <div class="pf-section-title">🏫 Academic Information</div>
-            <div class="pf-grid">
-              <div class="pf-field">
-                <label class="pf-label">School / College Name *</label>
-                <input id="pf-school" class="inp" placeholder="e.g. SR University" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Class / Course</label>
-                <input id="pf-class" class="inp" placeholder="e.g. B.Tech CSE / Class 10" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Section</label>
-                <input id="pf-section" class="inp" placeholder="e.g. A" maxlength="4" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Academic Year</label>
-                <input id="pf-year" class="inp" placeholder="e.g. 2025–2026" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Semester / Term</label>
-                <input id="pf-sem" class="inp" placeholder="e.g. Semester 5" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Student ID (if different)</label>
-                <input id="pf-sid" class="inp" placeholder="e.g. SRU2022041" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Parent / Guardian -->
-          <div class="pf-section">
-            <div class="pf-section-title">👨‍👧 Parent / Guardian Details</div>
-            <div class="pf-grid">
-              <div class="pf-field">
-                <label class="pf-label">Father’s Name</label>
-                <input id="pf-father" class="inp" placeholder="Father’s full name" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Mother’s Name</label>
-                <input id="pf-mother" class="inp" placeholder="Mother’s full name" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Guardian Name (if different)</label>
-                <input id="pf-guardian" class="inp" placeholder="Guardian full name" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Parent Contact</label>
-                <input id="pf-parent-phone" class="inp" type="tel" placeholder="+91 9XXXXXXXXX" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Parent Email</label>
-                <input id="pf-parent-email" class="inp" type="email" placeholder="parent@email.com" />
-              </div>
-              <div class="pf-field">
-                <label class="pf-label">Relation</label>
-                <select id="pf-relation" class="inp">
-                  <option value="Father">Father</option>
-                  <option value="Mother">Mother</option>
-                  <option value="Guardian">Guardian</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Subjects -->
-          <div class="pf-section">
-            <div class="pf-section-title">📚 Enrolled Subjects</div>
-            <div class="subjects-input-row">
-              <input id="subj-input" class="inp" placeholder="Add subject (e.g. Mathematics, Physics)" />
-              <button class="btn btn--primary" onclick="addSubject()">Add</button>
-            </div>
-            <div class="subjects-tags" id="subjects-tags"></div>
-          </div>
-
-          <!-- Address -->
-          <div class="pf-section">
-            <div class="pf-section-title">🏠 Address</div>
-            <div class="pf-grid">
-              <div class="pf-field" style="grid-column:1/-1">
-                <label class="pf-label">Full Address</label>
-                <textarea id="pf-address" class="inp" rows="2" placeholder="House No, Street, City, State, PIN"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="pf-actions">
-            <button class="btn btn--primary" onclick="saveProfile()">&#10003; Save Profile</button>
-            <button class="btn btn--secondary" onclick="clearProfile()">&#8635; Clear All</button>
-          </div>
+    <!-- TAB: SUBJECTS -->
+    <section class="tab-panel" id="tab-subjects">
+      <div class="panel-header"><h2 class="panel-title">Subject Manager</h2></div>
+      <div class="form-card">
+        <div class="form-row">
+          <input id="sub-name" class="inp" placeholder="Subject name" />
+          <input id="sub-code" class="inp" placeholder="Code (e.g. CS301)" />
+          <input id="sub-credits" class="inp" type="number" placeholder="Credits" min="1" />
+          <select id="sub-color" class="inp">
+            <option value="indigo">Indigo</option>
+            <option value="sky">Sky</option>
+            <option value="emerald">Emerald</option>
+            <option value="rose">Rose</option>
+            <option value="violet">Violet</option>
+            <option value="amber">Amber</option>
+            <option value="teal">Teal</option>
+          </select>
+          <input id="sub-teacher" class="inp" placeholder="Faculty name" />
+          <button class="btn btn--primary" onclick="addSubject()">Add Subject</button>
         </div>
       </div>
-
-      <!-- Profile Summary Card (shown after save) -->
-      <div class="profile-summary" id="profile-summary" style="display:none">
-        <div class="ps-header">📋 Profile Summary</div>
-        <div class="ps-body" id="ps-body"></div>
-      </div>
+      <div class="subjects-grid" id="subjects-grid"></div>
     </section>
 
-    <!-- ░░ TAB: GPA ░░ -->
+    <!-- TAB: GPA -->
     <section class="tab-panel" id="tab-gpa">
       <div class="panel-header"><h2 class="panel-title">GPA Tracker</h2></div>
       <div class="form-card">
         <div class="form-row">
-          <input id="gpa-subject" class="inp" placeholder="Subject name" list="gpa-subj-list" />
-          <datalist id="gpa-subj-list"></datalist>
-          <input id="gpa-grade"   class="inp" placeholder="Grade (O / A+ / A / B+ / 9.5)" />
+          <input id="gpa-subject" class="inp" placeholder="Subject name" />
+          <input id="gpa-grade" class="inp" placeholder="Grade (A, B+, 9.0 …)" />
           <input id="gpa-credits" class="inp" type="number" placeholder="Credits" min="1" />
           <button class="btn btn--primary" onclick="addGrade()">Add</button>
+        </div>
+      </div>
+      <div class="gpa-predictor">
+        <h4>🔮 Grade Predictor — What GPA do I need?</h4>
+        <div class="form-row" style="margin-top:.5rem">
+          <input id="pred-target" class="inp" type="number" placeholder="Target GPA (e.g. 8.5)" step="0.1" min="0" max="10" />
+          <button class="btn btn--outline" onclick="predictGrade()">Predict</button>
+          <span id="pred-result" style="font-size:.85rem;color:var(--primary);padding:.5rem"></span>
         </div>
       </div>
       <div class="table-card">
@@ -334,87 +160,115 @@
           <tbody id="gpa-table-body"></tbody>
         </table>
       </div>
-      <div class="gpa-summary">
-        <div class="gpa-badge">Cumulative GPA: <strong id="gpa-display">--</strong></div>
+      <div class="gpa-summary"><div class="gpa-badge">Cumulative GPA: <strong id="gpa-display">--</strong></div>
+        <button class="btn btn--outline" onclick="exportGPA()">&#8681; Export CSV</button>
       </div>
-      <div class="chart-card" style="margin-top:1.5rem">
-        <h3 class="chart-title">Grade Points — Bar Chart</h3>
-        <canvas id="gradesBar"></canvas>
-      </div>
+      <div class="chart-card" style="margin-top:1.5rem"><h3 class="chart-title">Grades Bar Chart</h3><canvas id="gradesBar"></canvas></div>
     </section>
 
-    <!-- ░░ TAB: ATTENDANCE ░░ -->
+    <!-- TAB: ATTENDANCE -->
     <section class="tab-panel" id="tab-attendance">
       <div class="panel-header"><h2 class="panel-title">Attendance Tracker</h2></div>
       <div class="form-card">
         <div class="form-row">
-          <input  id="att-subject" class="inp" placeholder="Subject" list="att-subj-list" />
-          <datalist id="att-subj-list"></datalist>
-          <input  id="att-present" class="inp" type="number" placeholder="Classes attended" min="0" />
-          <input  id="att-total"   class="inp" type="number" placeholder="Total classes held" min="1" />
-          <button class="btn btn--primary" onclick="addAttendance()">Save</button>
+          <input id="att-subject" class="inp" placeholder="Subject" />
+          <input id="att-present" class="inp" type="number" placeholder="Classes attended" min="0" />
+          <input id="att-total" class="inp" type="number" placeholder="Total classes" min="1" />
+          <button class="btn btn--primary" onclick="addAttendance()">Add</button>
         </div>
       </div>
+      <div class="att-summary-row" id="att-summary-row"></div>
       <div class="att-cards" id="att-cards"></div>
-      <div class="chart-card" style="margin-top:1.5rem">
-        <h3 class="chart-title">Per-Subject Attendance %</h3>
-        <canvas id="attBar"></canvas>
-      </div>
+      <div class="chart-card" style="margin-top:1.5rem"><h3 class="chart-title">Per-Subject Attendance %</h3><canvas id="attBar"></canvas></div>
     </section>
 
-    <!-- ░░ TAB: TIMETABLE ░░ -->
+    <!-- TAB: TIMETABLE -->
     <section class="tab-panel" id="tab-timetable">
       <div class="panel-header"><h2 class="panel-title">Weekly Timetable</h2></div>
       <div class="form-card">
         <div class="form-row">
           <select id="tt-day" class="inp">
-            <option value="Mon">Monday</option>
-            <option value="Tue">Tuesday</option>
-            <option value="Wed">Wednesday</option>
-            <option value="Thu">Thursday</option>
-            <option value="Fri">Friday</option>
-            <option value="Sat">Saturday</option>
+            <option value="Mon">Monday</option><option value="Tue">Tuesday</option>
+            <option value="Wed">Wednesday</option><option value="Thu">Thursday</option>
+            <option value="Fri">Friday</option><option value="Sat">Saturday</option>
           </select>
-          <input id="tt-time"    class="inp" type="time" />
-          <input id="tt-subject" class="inp" placeholder="Subject" list="tt-subj-list" />
-          <datalist id="tt-subj-list"></datalist>
+          <input id="tt-time" class="inp" type="time" />
+          <input id="tt-subject" class="inp" placeholder="Subject" />
+          <input id="tt-room" class="inp" placeholder="Room / Location" />
           <select id="tt-color" class="inp">
-            <option value="indigo">Indigo</option>
-            <option value="sky">Sky Blue</option>
-            <option value="emerald">Emerald</option>
-            <option value="rose">Rose</option>
-            <option value="violet">Violet</option>
-            <option value="amber">Amber</option>
+            <option value="indigo">Indigo</option><option value="sky">Sky Blue</option>
+            <option value="emerald">Emerald</option><option value="rose">Rose</option>
+            <option value="violet">Violet</option><option value="amber">Amber</option>
           </select>
           <button class="btn btn--primary" onclick="addTimetable()">Add</button>
         </div>
       </div>
+      <div class="today-classes" id="today-classes"></div>
       <div class="timetable-grid" id="timetable-grid"></div>
     </section>
 
-    <!-- ░░ TAB: TODO ░░ -->
+    <!-- TAB: TODO -->
     <section class="tab-panel" id="tab-todo">
       <div class="panel-header"><h2 class="panel-title">To-Do List</h2></div>
       <div class="form-card">
         <div class="form-row">
-          <input  id="todo-text"     class="inp" placeholder="Task description" />
-          <input  id="todo-due"      class="inp" type="date" />
+          <input id="todo-text" class="inp" placeholder="Task description" />
+          <input id="todo-subject" class="inp" placeholder="Subject (optional)" />
+          <input id="todo-due" class="inp" type="date" />
           <select id="todo-priority" class="inp">
-            <option value="high">🔴 High Priority</option>
-            <option value="medium">🟡 Medium Priority</option>
-            <option value="low">🟢 Low Priority</option>
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
           </select>
           <button class="btn btn--primary" onclick="addTodo()">Add</button>
         </div>
       </div>
+      <div class="todo-stats-row" id="todo-stats-row"></div>
       <div class="todo-filters">
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn" data-filter="high">🔴 High</button>
         <button class="filter-btn" data-filter="medium">🟡 Medium</button>
         <button class="filter-btn" data-filter="low">🟢 Low</button>
         <button class="filter-btn" data-filter="done">✅ Done</button>
+        <button class="filter-btn" data-filter="overdue">⚠️ Overdue</button>
       </div>
       <ul class="todo-list" id="todo-list"></ul>
+    </section>
+
+    <!-- TAB: ANALYTICS -->
+    <section class="tab-panel" id="tab-analytics">
+      <div class="panel-header"><h2 class="panel-title">Analytics & Insights</h2></div>
+      <div class="analytics-grid">
+        <div class="chart-card"><h3 class="chart-title">GPA vs Target</h3><canvas id="gpaRadar"></canvas></div>
+        <div class="chart-card"><h3 class="chart-title">Credit Distribution</h3><canvas id="creditPie"></canvas></div>
+        <div class="chart-card"><h3 class="chart-title">Attendance Heatmap</h3><canvas id="attHeat"></canvas></div>
+        <div class="chart-card"><h3 class="chart-title">Task Priority Mix</h3><canvas id="todoPie"></canvas></div>
+      </div>
+      <div class="insights-card" id="insights-card"></div>
+    </section>
+
+    <!-- TAB: NOTES -->
+    <section class="tab-panel" id="tab-notes">
+      <div class="panel-header"><h2 class="panel-title">Quick Notes</h2></div>
+      <div class="form-card">
+        <div class="form-row">
+          <input id="note-title" class="inp" placeholder="Note title" />
+          <select id="note-subject" class="inp" id="note-subject"></select>
+          <select id="note-tag" class="inp">
+            <option value="general">📌 General</option>
+            <option value="lecture">🏫 Lecture</option>
+            <option value="exam">📝 Exam</option>
+            <option value="assignment">📎 Assignment</option>
+            <option value="important">⭐ Important</option>
+          </select>
+          <button class="btn btn--primary" onclick="addNote()">Add Note</button>
+        </div>
+        <textarea id="note-body" class="inp note-textarea" placeholder="Write your note here…" rows="4"></textarea>
+      </div>
+      <div class="notes-search">
+        <input id="notes-search" class="inp" placeholder="🔍 Search notes…" oninput="renderNotes()" />
+      </div>
+      <div class="notes-grid" id="notes-grid"></div>
     </section>
 
   </main>
